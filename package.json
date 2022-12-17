@@ -1,7 +1,7 @@
 {
-  "name": "hardhat-boilerplate",
+  "name": "vaim_mpv_hardhat",
   "version": "0.0.1",
-  "description": "Boiler plate hardhat project typescript",
+  "description": "VaiM MVP ",
   "main": "index.js",
   "scripts": {
     "build": "npm run clean && npm run compile",
@@ -25,8 +25,8 @@
     "ethereum-waffle": "^3.2.1",
     "ethers": "^5.0.26",
     "hardhat": "^2.0.8",
-    "hardhat-deploy": "^0.7.0-beta.44",
-    "hardhat-typechain": "^0.3.3",
+    "hardhat-deploy": "^0.11.22",
+    "hardhat-typechain": "^0.3.5",
     "prettier": "^2.2.1",
     "prettier-plugin-solidity": "^1.0.0-beta.3",
     "solidity-coverage": "^0.7.14",
