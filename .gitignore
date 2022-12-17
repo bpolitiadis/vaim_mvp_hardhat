@@ -11,3 +11,4 @@ deployments
 
 typechain
 yarn-error.log
+yarn.lock

@@ -3,7 +3,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { developmentChains, VERIFICATION_BLOCK_CONFIRMATIONS } from '../helper-hardhat-config';
 import verify from '../utils/verify';
 
-const deployBasicNft: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployPunchathlon: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployments, getNamedAccounts, network, ethers } = hre;
 	const { deploy, log } = deployments;
 	const { deployer } = await getNamedAccounts();
@@ -14,7 +14,7 @@ const deployBasicNft: DeployFunction = async function (hre: HardhatRuntimeEnviro
 	log('----------------------------------------------------');
 
 	const args: any[] = [];
-	const basicNft = await deploy('Punchathlon', {
+	const punchathlon = await deploy('Punchathlon', {
 		from: deployer,
 		args,
 		log: true,
@@ -24,9 +24,10 @@ const deployBasicNft: DeployFunction = async function (hre: HardhatRuntimeEnviro
 	// Verify the deployment
 	if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
 		log('Verifying...');
-		await verify(basicNft.address, args);
+		await verify(punchathlon.address, args);
 	}
 };
 
-export default deployBasicNft;
-deployBasicNft.tags = ['all', 'basicnft', 'main'];
+export default deployPunchathlon;
+
+deployPunchathlon.tags = ['all', 'main'];
