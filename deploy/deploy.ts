@@ -13,8 +13,8 @@ const deployBasicNft: DeployFunction = async function (hre: HardhatRuntimeEnviro
 
 	log('----------------------------------------------------');
 
-	const args: any[] = ['hi'];
-	const basicNft = await deploy('Greeter', {
+	const args: any[] = [];
+	const basicNft = await deploy('Punchathlon', {
 		from: deployer,
 		args,
 		log: true,
