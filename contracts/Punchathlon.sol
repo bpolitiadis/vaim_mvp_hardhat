@@ -16,6 +16,13 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         MuayThai
     }
 
+    enum Rarities {
+        Common,
+        Uncommon,
+        Rare,
+        Legendary
+    }
+
     struct Stats {
         uint8 strength;
         uint8 stamina;
@@ -23,7 +30,13 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         uint8 victories;
     }
 
+    struct TraitAdjustmentByRarity {
+        int8 low;
+        int8 high;
+    }
+
     mapping (bytes => Stats) baseStats;
+    mapping (bytes => TraitAdjustmentByRarity) rarityAdjustments;
 
 
     constructor() ERC721("Punchathlon", "PUNCHR") ERC721Enumerable() ERC721URIStorage() {
@@ -42,6 +55,16 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         baseStats[abi.encode(FighterClass.Judo)] = judo;
         baseStats[abi.encode(FighterClass.Wrestling)] = wrestling;
         baseStats[abi.encode(FighterClass.MuayThai)] = muayThai;
+
+        TraitAdjustmentByRarity memory common = TraitAdjustmentByRarity(-20, 0);
+        TraitAdjustmentByRarity memory uncommon = TraitAdjustmentByRarity(-15, 5);
+        TraitAdjustmentByRarity memory rare = TraitAdjustmentByRarity(-10, 10);
+        TraitAdjustmentByRarity memory legendary = TraitAdjustmentByRarity(-5, 15);
+
+        rarityAdjustments[abi.encode(Rarities.Common)] = common;
+        rarityAdjustments[abi.encode(Rarities.Uncommon)] = uncommon;
+        rarityAdjustments[abi.encode(Rarities.Rare)] = rare;
+        rarityAdjustments[abi.encode(Rarities.Legendary)] = legendary;
     }
 
     function getFighterClassBaseStats(string memory fighterClassName) internal returns(Stats memory) {
@@ -54,7 +77,17 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         return Stats(0, 0, 0, 0);
     }
 
+    function getAdjustmentByRarity(string memory rarity) internal returns(TraitAdjustmentByRarity memory) {
+        if (keccak256(bytes(rarity)) == keccak256(bytes("Common"))) return rarityAdjustments[abi.encode(Rarities.Common)];
+        if (keccak256(bytes(rarity)) == keccak256(bytes("Uncommon"))) return rarityAdjustments[abi.encode(Rarities.Uncommon)];
+        if (keccak256(bytes(rarity)) == keccak256(bytes("Rare"))) return rarityAdjustments[abi.encode(Rarities.Rare)];
+        if (keccak256(bytes(rarity)) == keccak256(bytes("Legendary"))) return rarityAdjustments[abi.encode(Rarities.Legendary)];
+
+        return TraitAdjustmentByRarity(0, 0);
+    }
+
     function mint(string memory fighterClass, string memory tokenURI) external returns (uint256) {
+        
         
         return 0;
     }
