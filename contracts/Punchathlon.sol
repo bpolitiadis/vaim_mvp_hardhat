@@ -38,6 +38,17 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         uint8 high;
     }
 
+    struct Match {
+        uint256 tokenId1;
+        uint256 tokenId2;
+        uint256 outcome;
+    }
+
+    uint256 matchCounter = 0;
+    uint8 maxMatches = 5;
+    mapping (uint8 => Match) rooms;
+    mapping (uint256 => Match) public matches;
+
     // The current token ID for creating new fighters
     uint256 private tokenId;
     // The maximum number of NFT fighters that can be created
@@ -214,6 +225,32 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
             return 15;
         }
         return 0;
+    }
+    
+    function joinRoom(uint8 roomNumber, uint256 _tokenId) external {
+        require(ownerOf(_tokenId) == msg.sender);
+        require(roomNumber < maxMatches);
+
+        if (rooms[roomNumber].tokenId1 == 0) {
+            rooms[roomNumber].tokenId1 = _tokenId;
+            return;
+        }
+
+        if (rooms[roomNumber].tokenId2 == 0) {
+            if (rooms[roomNumber].tokenId1 == _tokenId) {
+                revert("You are joined in this room already.");
+            }
+            rooms[roomNumber].tokenId2 = _tokenId;
+        } else {
+            revert("Room is full!");
+        }
+
+        uint256 outcome = fight(rooms[roomNumber].tokenId1, rooms[roomNumber].tokenId2);
+        rooms[roomNumber].outcome = outcome;
+        matchCounter++;
+        matches[matchCounter] = rooms[roomNumber];
+
+        rooms[roomNumber] = Match(0, 0, 0);
     }
 
     /*
