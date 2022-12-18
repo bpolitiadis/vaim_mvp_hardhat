@@ -34,8 +34,8 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
 
     // Struct representing trait adjustments based on rarity
     struct TraitAdjustmentByRarity {
-        int8 low;
-        int8 high;
+        uint8 low;
+        uint8 high;
     }
 
     // The current token ID for creating new fighters
@@ -78,10 +78,10 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         baseStats[abi.encode(FighterClass.MuayThai)] = muayThai;
 
         // Initialize the rarity adjustments for each rarity level
-        TraitAdjustmentByRarity memory common = TraitAdjustmentByRarity(-20, 0);
-        TraitAdjustmentByRarity memory uncommon = TraitAdjustmentByRarity(-15, 5);
-        TraitAdjustmentByRarity memory rare = TraitAdjustmentByRarity(-10, 10);
-        TraitAdjustmentByRarity memory legendary = TraitAdjustmentByRarity(-5, 15);
+        TraitAdjustmentByRarity memory common = TraitAdjustmentByRarity(0, 20);
+        TraitAdjustmentByRarity memory uncommon = TraitAdjustmentByRarity(5, 25);
+        TraitAdjustmentByRarity memory rare = TraitAdjustmentByRarity(10, 30);
+        TraitAdjustmentByRarity memory legendary = TraitAdjustmentByRarity(15, 35);
 
         // Store the rarity adjustments in the rarityAdjustments mapping
         rarityAdjustments[abi.encode(Rarities.Common)] = common;
@@ -90,7 +90,7 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         rarityAdjustments[abi.encode(Rarities.Legendary)] = legendary;
     }
 
-    function getFighterClassBaseStats(string memory fighterClassName) internal returns (Stats memory) {
+    function getFighterClassBaseStats(string memory fighterClassName) internal view returns (Stats memory) {
         if (keccak256(bytes(fighterClassName)) == keccak256(bytes("JiuJitsu")))
             return baseStats[abi.encode(FighterClass.JiuJitsu)];
         if (keccak256(bytes(fighterClassName)) == keccak256(bytes("KickBoxing")))
@@ -104,13 +104,22 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         return Stats(0, 0, 0, 0, FighterClass.KickBoxing, Rarities.Common);
     }
 
-    function getAdjustmentByRarity(string memory rarity) internal returns (TraitAdjustmentByRarity memory) {
+    function getAdjustmentByRarity(string memory rarity) internal view returns (TraitAdjustmentByRarity memory) {
         if (keccak256(bytes(rarity)) == keccak256(bytes("Common"))) return rarityAdjustments[abi.encode(Rarities.Common)];
         if (keccak256(bytes(rarity)) == keccak256(bytes("Uncommon")))
             return rarityAdjustments[abi.encode(Rarities.Uncommon)];
         if (keccak256(bytes(rarity)) == keccak256(bytes("Rare"))) return rarityAdjustments[abi.encode(Rarities.Rare)];
         if (keccak256(bytes(rarity)) == keccak256(bytes("Legendary")))
             return rarityAdjustments[abi.encode(Rarities.Legendary)];
+
+        return TraitAdjustmentByRarity(0, 0);
+    }
+
+    function getAdjustmentByRarity(Rarities rarity) internal view returns (TraitAdjustmentByRarity memory) {
+        if (rarity == Rarities.Common) return rarityAdjustments[abi.encode(Rarities.Common)];
+        if (rarity == Rarities.Uncommon) return rarityAdjustments[abi.encode(Rarities.Uncommon)];
+        if (rarity == Rarities.Rare) return rarityAdjustments[abi.encode(Rarities.Rare)];
+        if (rarity == Rarities.Legendary) return rarityAdjustments[abi.encode(Rarities.Legendary)];
 
         return TraitAdjustmentByRarity(0, 0);
     }
@@ -132,7 +141,12 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         // Set the base stats for the NFT based on its class
         tokenToStats[tokenId] = getFighterClassBaseStats(_class);
 
+        // adjust base stats by rarity
         tokenToStats[tokenId].rarity = getRarity();
+        uint8 randNumber = uint8(block.timestamp % 20);
+        tokenToStats[tokenId].strength = tokenToStats[tokenId].strength + getAdjustmentByRarity(tokenToStats[tokenId].rarity).low + randNumber;
+        tokenToStats[tokenId].stamina = tokenToStats[tokenId].stamina + getAdjustmentByRarity(tokenToStats[tokenId].rarity).low + randNumber;
+        tokenToStats[tokenId].technique = tokenToStats[tokenId].technique + getAdjustmentByRarity(tokenToStats[tokenId].rarity).low + randNumber;
 
         // Assign the NFT to the msg.sender
         _safeMint(msg.sender, tokenId);
@@ -162,8 +176,8 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         }
     }
 
-    function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
-        return ERC721URIStorage.tokenURI(tokenId);
+    function tokenURI(uint256 _tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+        return ERC721URIStorage.tokenURI(_tokenId);
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable) returns (bool) {
@@ -179,8 +193,8 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         ERC721._beforeTokenTransfer(from, to, 1, batchSize);
     }
 
-    function _burn(uint256 tokenId) internal virtual override(ERC721, ERC721URIStorage) {
-        return ERC721._burn(tokenId);
+    function _burn(uint256 _tokenId) internal virtual override(ERC721, ERC721URIStorage) {
+        return ERC721._burn(_tokenId);
     }
 
     /*
@@ -188,8 +202,8 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
      * @param tokenId The ID of the fighter token
      * @return The stats for the given token
      */
-    function getFighterStats(uint256 tokenId) public returns (Stats memory) {
-        return tokenToStats[tokenId];
+    function getFighterStats(uint256 _tokenId) public view returns (Stats memory) {
+        return tokenToStats[_tokenId];
     }
 
     /*
