@@ -46,8 +46,8 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
 
     uint256 matchCounter = 0;
     uint8 maxMatches = 5;
-    mapping (uint8 => Match) rooms;
-    mapping (uint256 => Match) public matches;
+    mapping(uint8 => Match) rooms;
+    mapping(uint256 => Match) public matches;
 
     // The current token ID for creating new fighters
     uint256 private tokenId = 0;
@@ -144,7 +144,7 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
     function mint(string memory _class, string memory _imageURI) public payable {
         // Increment the global NFT counter
         tokenId++;
-        
+
         // Ensure that the maximum number of NFTs has not been reached
         require(tokenId <= maxTokenIds, "Exceed maximum fighters supply");
 
@@ -177,52 +177,84 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         _setTokenURI(tokenId, _imageURI);
     }
 
+    /**
+     * Determines the winner of a fight between two fighters.
+     *
+     * @param _fighter1 The first fighter.
+     * @param _fighter2 The second fighter.
+     * @return The winning fighter.
+     */
     function fight(uint256 _fighter1, uint256 _fighter2) private view returns (uint256) {
+        // Calculate the total strength of fighter 1
         uint8 fighter1Sum = tokenToStats[_fighter1].strength +
             tokenToStats[_fighter1].stamina +
             tokenToStats[_fighter1].technique +
             calcFightAdv(_fighter1, _fighter2);
+
+        // Calculate the total strength of fighter 2
         uint8 fighter2Sum = tokenToStats[_fighter2].strength +
             tokenToStats[_fighter2].stamina +
             tokenToStats[_fighter2].technique +
             calcFightAdv(_fighter2, _fighter1);
 
+        // Determine the winner based on the total strength
         if (fighter1Sum >= fighter2Sum) return _fighter1;
         else return _fighter2;
     }
 
+    /**
+        This function calculates the fight advantage for a given fight between two fighters.
+        @param _fighter1 The first fighter in the fight.
+        @param _fighter2 The second fighter in the fight.
+        @return The fight advantage for the first fighter, as a percentage (0-100).
+    */
     function calcFightAdv(uint256 _fighter1, uint256 _fighter2) private view returns (uint8) {
+        // If the first fighter practices Jiu Jitsu and the second practices wrestling or Muay Thai,
+        // the first fighter has a 15% advantage.
         if (
             tokenToStats[_fighter1].fightStyle == FighterClass.JiuJitsu &&
             (tokenToStats[_fighter2].fightStyle == FighterClass.Wrestling ||
                 tokenToStats[_fighter2].fightStyle == FighterClass.MuayThai)
         ) {
             return 15;
-        } else if (
+        }
+        // If the first fighter practices Kickboxing and the second practices Jiu Jitsu or Muay Thai,
+        // the first fighter has a 15% advantage.
+        else if (
             tokenToStats[_fighter1].fightStyle == FighterClass.KickBoxing &&
             (tokenToStats[_fighter2].fightStyle == FighterClass.JiuJitsu ||
                 tokenToStats[_fighter2].fightStyle == FighterClass.MuayThai)
         ) {
             return 15;
-        } else if (
+        }
+        // If the first fighter practices Judo and the second practices Jiu Jitsu or Kickboxing,
+        // the first fighter has a 15% advantage.
+        else if (
             tokenToStats[_fighter1].fightStyle == FighterClass.Judo &&
             (tokenToStats[_fighter2].fightStyle == FighterClass.JiuJitsu ||
                 tokenToStats[_fighter2].fightStyle == FighterClass.KickBoxing)
         ) {
             return 15;
-        } else if (
+        }
+        // If the first fighter practices wrestling and the second practices Kickboxing or Judo,
+        // the first fighter has a 15% advantage.
+        else if (
             tokenToStats[_fighter1].fightStyle == FighterClass.Wrestling &&
             (tokenToStats[_fighter2].fightStyle == FighterClass.KickBoxing ||
                 tokenToStats[_fighter2].fightStyle == FighterClass.Judo)
         ) {
             return 15;
-        } else if (
+        }
+        // If the first fighter practices Muay Thai and the second practices Judo or wrestling,
+        // the first fighter has a 15% advantage.
+        else if (
             tokenToStats[_fighter1].fightStyle == FighterClass.MuayThai &&
             (tokenToStats[_fighter2].fightStyle == FighterClass.Judo ||
                 tokenToStats[_fighter2].fightStyle == FighterClass.Wrestling)
         ) {
             return 15;
         }
+        // If none of the above conditions are met, there is no advantage for either fighter.
         return 0;
     }
 
@@ -322,5 +354,39 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
      */
     function getPrice() public view returns (uint256) {
         return mintPrice;
+    }
+
+    /**
+     * Returns the current number of matches that have been created.
+     * @return The number of matches that have been created.
+     */
+    function getMatchCounter() public view returns (uint256) {
+        return matchCounter;
+    }
+
+    /**
+     * Returns the maximum number of matches that can be created.
+     * @return The maximum number of matches that can be created.
+     */
+    function getMaxMatches() public view returns (uint8) {
+        return maxMatches;
+    }
+
+    /**
+     * Returns the Match object for the given room ID.
+     * @param roomId The ID of the room to get the Match object for.
+     * @return The Match object for the given room ID.
+     */
+    function getRoom(uint8 roomId) public view returns (Match memory) {
+        return rooms[roomId];
+    }
+
+    /**
+     * Returns the Match object for the given match ID.
+     * @param matchId The ID of the match to get the Match object for.
+     * @return The Match object for the given match ID.
+     */
+    function getMatch(uint256 matchId) public view returns (Match memory) {
+        return matches[matchId];
     }
 }
