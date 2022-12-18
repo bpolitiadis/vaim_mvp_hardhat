@@ -126,7 +126,7 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
 
     /*
      * @dev Creates a new NFT (non-fungible token) and assigns it to the msg.sender.
-     * @param _class String representing the class of the NFT (e.g. "warrior", "archer", etc.)
+     * @param _class String representing the fighting style of the NFT fighter
      * @param _imageURI String containing the URI of an image representing the NFT
      * @param mintPrice Minimum amount of ether that must be sent with the transaction in order to create the NFT
      * @return The ID of the newly created NFT
@@ -144,9 +144,18 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         // adjust base stats by rarity
         tokenToStats[tokenId].rarity = getRarity();
         uint8 randNumber = uint8(block.timestamp % 20);
-        tokenToStats[tokenId].strength = tokenToStats[tokenId].strength + getAdjustmentByRarity(tokenToStats[tokenId].rarity).low + randNumber;
-        tokenToStats[tokenId].stamina = tokenToStats[tokenId].stamina + getAdjustmentByRarity(tokenToStats[tokenId].rarity).low + randNumber;
-        tokenToStats[tokenId].technique = tokenToStats[tokenId].technique + getAdjustmentByRarity(tokenToStats[tokenId].rarity).low + randNumber;
+        tokenToStats[tokenId].strength =
+            tokenToStats[tokenId].strength +
+            getAdjustmentByRarity(tokenToStats[tokenId].rarity).low +
+            randNumber;
+        tokenToStats[tokenId].stamina =
+            tokenToStats[tokenId].stamina +
+            getAdjustmentByRarity(tokenToStats[tokenId].rarity).low +
+            randNumber;
+        tokenToStats[tokenId].technique =
+            tokenToStats[tokenId].technique +
+            getAdjustmentByRarity(tokenToStats[tokenId].rarity).low +
+            randNumber;
 
         // Assign the NFT to the msg.sender
         _safeMint(msg.sender, tokenId);
@@ -156,6 +165,55 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
 
         // Increment the global NFT counter
         tokenId++;
+    }
+
+    function fight(uint256 _fighter1, uint256 _fighter2) private view returns (uint256) {
+        uint8 fighter1Sum = tokenToStats[_fighter1].strength +
+            tokenToStats[_fighter1].stamina +
+            tokenToStats[_fighter1].technique +
+            calcFightAdv(_fighter1, _fighter2);
+        uint8 fighter2Sum = tokenToStats[_fighter2].strength +
+            tokenToStats[_fighter2].stamina +
+            tokenToStats[_fighter2].technique +
+            calcFightAdv(_fighter2, _fighter1);
+
+        if (fighter1Sum >= fighter2Sum) return _fighter1;
+        else return _fighter2;
+    }
+
+    function calcFightAdv(uint256 _fighter1, uint256 _fighter2) private view returns (uint8) {
+        if (
+            tokenToStats[_fighter1].fightStyle == FighterClass.JiuJitsu &&
+            (tokenToStats[_fighter2].fightStyle == FighterClass.Wrestling ||
+                tokenToStats[_fighter2].fightStyle == FighterClass.MuayThai)
+        ) {
+            return 15;
+        } else if (
+            tokenToStats[_fighter1].fightStyle == FighterClass.KickBoxing &&
+            (tokenToStats[_fighter2].fightStyle == FighterClass.JiuJitsu ||
+                tokenToStats[_fighter2].fightStyle == FighterClass.MuayThai)
+        ) {
+            return 15;
+        } else if (
+            tokenToStats[_fighter1].fightStyle == FighterClass.Judo &&
+            (tokenToStats[_fighter2].fightStyle == FighterClass.JiuJitsu ||
+                tokenToStats[_fighter2].fightStyle == FighterClass.KickBoxing)
+        ) {
+            return 15;
+        } else if (
+            tokenToStats[_fighter1].fightStyle == FighterClass.Wrestling &&
+            (tokenToStats[_fighter2].fightStyle == FighterClass.KickBoxing ||
+                tokenToStats[_fighter2].fightStyle == FighterClass.Judo)
+        ) {
+            return 15;
+        } else if (
+            tokenToStats[_fighter1].fightStyle == FighterClass.MuayThai &&
+            (tokenToStats[_fighter2].fightStyle == FighterClass.Judo ||
+                tokenToStats[_fighter2].fightStyle == FighterClass.Wrestling)
+        ) {
+            return 15;
+        }
+        return 0;
     }
 
     /*
