@@ -50,7 +50,7 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
     mapping (uint256 => Match) public matches;
 
     // The current token ID for creating new fighters
-    uint256 private tokenId;
+    uint256 private tokenId = 0;
     // The maximum number of NFT fighters that can be created
     uint256 private maxTokenIds = 1000;
     // The mint price to create a new NFT fighter
@@ -65,7 +65,6 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
 
     // Initializes the contract and BaseStats
     constructor() ERC721("Punchathlon", "PUNCHR") {
-        tokenId = 0;
         initBaseStats();
     }
 
@@ -143,8 +142,11 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
      * @return The ID of the newly created NFT
      */
     function mint(string memory _class, string memory _imageURI) public payable {
+        // Increment the global NFT counter
+        tokenId++;
+        
         // Ensure that the maximum number of NFTs has not been reached
-        require(tokenId < maxTokenIds, "Exceed maximum fighters supply");
+        require(tokenId <= maxTokenIds, "Exceed maximum fighters supply");
 
         // Ensure that the correct amount of ether has been sent with the transaction
         require(msg.value >= mintPrice, "Ether sent is not correct");
@@ -173,9 +175,6 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
 
         // Set the URI of the NFT's image
         _setTokenURI(tokenId, _imageURI);
-
-        // Increment the global NFT counter
-        tokenId++;
     }
 
     function fight(uint256 _fighter1, uint256 _fighter2) private view returns (uint256) {
@@ -226,7 +225,7 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         }
         return 0;
     }
-    
+
     function joinRoom(uint8 roomNumber, uint256 _tokenId) external {
         require(ownerOf(_tokenId) == msg.sender);
         require(roomNumber < maxMatches);
