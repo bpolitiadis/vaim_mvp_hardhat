@@ -150,17 +150,15 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
      * @return The rarity value.
      */
     function getRarity() private view returns (Rarities) {
-        uint256 timestampMod4 = block.timestamp % 4;
-        if (timestampMod4 == 0) {
+        uint256 timestampMod10 = block.timestamp % 100;
+        if (timestampMod10 <= 50) {
             return Rarities.Common;
-        } else if (timestampMod4 == 1) {
+        } else if (timestampMod10 > 50 && timestampMod10 <= 85) {
             return Rarities.Uncommon;
-        } else if (timestampMod4 == 2) {
+        } else if (timestampMod10 > 85 && timestampMod10 <= 95) {
             return Rarities.Rare;
-        } else if (timestampMod4 == 3) {
-            return Rarities.Legendary;
         } else {
-            return Rarities.Common;
+            return Rarities.Legendary;
         }
     }
 
