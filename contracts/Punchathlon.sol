@@ -74,11 +74,11 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
      */
     function initBaseStats() internal {
         // Initialize the base stats for each fighter class
-        Stats memory jiuJitsu = Stats(80, 80, 20, 0, FighterClass.JiuJitsu, Rarities.Common);
-        Stats memory kickBoxing = Stats(60, 60, 60, 0, FighterClass.KickBoxing, Rarities.Common);
+        Stats memory jiuJitsu = Stats(60, 60, 60, 0, FighterClass.JiuJitsu, Rarities.Common);
+        Stats memory kickBoxing = Stats(80, 60, 40, 0, FighterClass.KickBoxing, Rarities.Common);
         Stats memory judo = Stats(40, 60, 80, 0, FighterClass.Judo, Rarities.Common);
-        Stats memory wrestling = Stats(20, 100, 60, 0, FighterClass.Wrestling, Rarities.Common);
-        Stats memory muayThai = Stats(100, 40, 40, 0, FighterClass.MuayThai, Rarities.Common);
+        Stats memory wrestling = Stats(100, 40, 40, 0, FighterClass.Wrestling, Rarities.Common);
+        Stats memory muayThai = Stats(40, 80, 60, 0, FighterClass.MuayThai, Rarities.Common);
 
         // Store the base stats in the baseStats mapping
         baseStats[abi.encode(FighterClass.JiuJitsu)] = jiuJitsu;
@@ -88,50 +88,16 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         baseStats[abi.encode(FighterClass.MuayThai)] = muayThai;
 
         // Initialize the rarity adjustments for each rarity level
-        TraitAdjustmentByRarity memory common = TraitAdjustmentByRarity(0, 20);
-        TraitAdjustmentByRarity memory uncommon = TraitAdjustmentByRarity(5, 25);
-        TraitAdjustmentByRarity memory rare = TraitAdjustmentByRarity(10, 30);
-        TraitAdjustmentByRarity memory legendary = TraitAdjustmentByRarity(15, 35);
+        TraitAdjustmentByRarity memory common = TraitAdjustmentByRarity(0, 25);
+        TraitAdjustmentByRarity memory uncommon = TraitAdjustmentByRarity(25, 50);
+        TraitAdjustmentByRarity memory rare = TraitAdjustmentByRarity(50, 75);
+        TraitAdjustmentByRarity memory legendary = TraitAdjustmentByRarity(75, 100);
 
         // Store the rarity adjustments in the rarityAdjustments mapping
         rarityAdjustments[abi.encode(Rarities.Common)] = common;
         rarityAdjustments[abi.encode(Rarities.Uncommon)] = uncommon;
         rarityAdjustments[abi.encode(Rarities.Rare)] = rare;
         rarityAdjustments[abi.encode(Rarities.Legendary)] = legendary;
-    }
-
-    function getFighterClassBaseStats(string memory fighterClassName) internal view returns (Stats memory) {
-        if (keccak256(bytes(fighterClassName)) == keccak256(bytes("JiuJitsu")))
-            return baseStats[abi.encode(FighterClass.JiuJitsu)];
-        if (keccak256(bytes(fighterClassName)) == keccak256(bytes("KickBoxing")))
-            return baseStats[abi.encode(FighterClass.KickBoxing)];
-        if (keccak256(bytes(fighterClassName)) == keccak256(bytes("Judo"))) return baseStats[abi.encode(FighterClass.Judo)];
-        if (keccak256(bytes(fighterClassName)) == keccak256(bytes("Wrestling")))
-            return baseStats[abi.encode(FighterClass.Wrestling)];
-        if (keccak256(bytes(fighterClassName)) == keccak256(bytes("MuayThai")))
-            return baseStats[abi.encode(FighterClass.MuayThai)];
-
-        return Stats(0, 0, 0, 0, FighterClass.KickBoxing, Rarities.Common);
-    }
-
-    function getAdjustmentByRarity(string memory rarity) internal view returns (TraitAdjustmentByRarity memory) {
-        if (keccak256(bytes(rarity)) == keccak256(bytes("Common"))) return rarityAdjustments[abi.encode(Rarities.Common)];
-        if (keccak256(bytes(rarity)) == keccak256(bytes("Uncommon")))
-            return rarityAdjustments[abi.encode(Rarities.Uncommon)];
-        if (keccak256(bytes(rarity)) == keccak256(bytes("Rare"))) return rarityAdjustments[abi.encode(Rarities.Rare)];
-        if (keccak256(bytes(rarity)) == keccak256(bytes("Legendary")))
-            return rarityAdjustments[abi.encode(Rarities.Legendary)];
-
-        return TraitAdjustmentByRarity(0, 0);
-    }
-
-    function getAdjustmentByRarity(Rarities rarity) internal view returns (TraitAdjustmentByRarity memory) {
-        if (rarity == Rarities.Common) return rarityAdjustments[abi.encode(Rarities.Common)];
-        if (rarity == Rarities.Uncommon) return rarityAdjustments[abi.encode(Rarities.Uncommon)];
-        if (rarity == Rarities.Rare) return rarityAdjustments[abi.encode(Rarities.Rare)];
-        if (rarity == Rarities.Legendary) return rarityAdjustments[abi.encode(Rarities.Legendary)];
-
-        return TraitAdjustmentByRarity(0, 0);
     }
 
     /*
@@ -156,7 +122,7 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
 
         // adjust base stats by rarity
         tokenToStats[tokenId].rarity = getRarity();
-        uint8 randNumber = uint8(block.timestamp % 20);
+        uint8 randNumber = uint8(block.timestamp % 25);
         tokenToStats[tokenId].strength =
             tokenToStats[tokenId].strength +
             getAdjustmentByRarity(tokenToStats[tokenId].rarity).low +
@@ -284,24 +250,6 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
         rooms[roomNumber] = Match(0, 0, 0);
     }
 
-    /*
-     * Returns the rarity value with some random input.
-     *
-     * @return The rarity value.
-     */
-    function getRarity() private view returns (Rarities) {
-        uint256 timestampMod10 = block.timestamp % 100;
-        if (timestampMod10 <= 50) {
-            return Rarities.Common;
-        } else if (timestampMod10 > 50 && timestampMod10 <= 85) {
-            return Rarities.Uncommon;
-        } else if (timestampMod10 > 85 && timestampMod10 <= 95) {
-            return Rarities.Rare;
-        } else {
-            return Rarities.Legendary;
-        }
-    }
-
     function tokenURI(uint256 _tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return ERC721URIStorage.tokenURI(_tokenId);
     }
@@ -321,6 +269,58 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
 
     function _burn(uint256 _tokenId) internal virtual override(ERC721, ERC721URIStorage) {
         return ERC721._burn(_tokenId);
+    }
+
+    function getFighterClassBaseStats(string memory fighterClassName) internal view returns (Stats memory) {
+        if (keccak256(bytes(fighterClassName)) == keccak256(bytes("JiuJitsu")))
+            return baseStats[abi.encode(FighterClass.JiuJitsu)];
+        if (keccak256(bytes(fighterClassName)) == keccak256(bytes("KickBoxing")))
+            return baseStats[abi.encode(FighterClass.KickBoxing)];
+        if (keccak256(bytes(fighterClassName)) == keccak256(bytes("Judo"))) return baseStats[abi.encode(FighterClass.Judo)];
+        if (keccak256(bytes(fighterClassName)) == keccak256(bytes("Wrestling")))
+            return baseStats[abi.encode(FighterClass.Wrestling)];
+        if (keccak256(bytes(fighterClassName)) == keccak256(bytes("MuayThai")))
+            return baseStats[abi.encode(FighterClass.MuayThai)];
+        revert();
+        // return Stats(0, 0, 0, 0, FighterClass.KickBoxing, Rarities.Common);
+    }
+
+    function getAdjustmentByRarity(string memory rarity) public view returns (TraitAdjustmentByRarity memory) {
+        if (keccak256(bytes(rarity)) == keccak256(bytes("Common"))) return rarityAdjustments[abi.encode(Rarities.Common)];
+        if (keccak256(bytes(rarity)) == keccak256(bytes("Uncommon")))
+            return rarityAdjustments[abi.encode(Rarities.Uncommon)];
+        if (keccak256(bytes(rarity)) == keccak256(bytes("Rare"))) return rarityAdjustments[abi.encode(Rarities.Rare)];
+        if (keccak256(bytes(rarity)) == keccak256(bytes("Legendary")))
+            return rarityAdjustments[abi.encode(Rarities.Legendary)];
+        revert();
+        return TraitAdjustmentByRarity(0, 0);
+    }
+
+    function getAdjustmentByRarity(Rarities rarity) public view returns (TraitAdjustmentByRarity memory) {
+        if (rarity == Rarities.Common) return rarityAdjustments[abi.encode(Rarities.Common)];
+        if (rarity == Rarities.Uncommon) return rarityAdjustments[abi.encode(Rarities.Uncommon)];
+        if (rarity == Rarities.Rare) return rarityAdjustments[abi.encode(Rarities.Rare)];
+        if (rarity == Rarities.Legendary) return rarityAdjustments[abi.encode(Rarities.Legendary)];
+        revert();
+        return TraitAdjustmentByRarity(0, 0);
+    }
+
+    /*
+     * Returns the rarity value with some random input.
+     *
+     * @return The rarity value.
+     */
+    function getRarity() private view returns (Rarities) {
+        uint256 timestampMod10 = block.timestamp % 100;
+        if (timestampMod10 <= 50) {
+            return Rarities.Common;
+        } else if (timestampMod10 > 50 && timestampMod10 <= 85) {
+            return Rarities.Uncommon;
+        } else if (timestampMod10 > 85 && timestampMod10 <= 95) {
+            return Rarities.Rare;
+        } else {
+            return Rarities.Legendary;
+        }
     }
 
     /*
@@ -352,7 +352,7 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
      * getPrice returns the price of a single token
      * @return The price of a single token
      */
-    function getPrice() public view returns (uint256) {
+    function getMintPrice() public view returns (uint256) {
         return mintPrice;
     }
 
@@ -388,5 +388,9 @@ contract Punchathlon is ERC721Enumerable, ERC721URIStorage {
      */
     function getMatch(uint256 matchId) public view returns (Match memory) {
         return matches[matchId];
+    }
+
+    function getRarityAdjustment(bytes memory _rarity) public view returns (TraitAdjustmentByRarity memory) {
+        return rarityAdjustments[_rarity];
     }
 }
